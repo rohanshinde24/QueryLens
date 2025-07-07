@@ -1,0 +1,11 @@
+{
+  "rawOutput": "Hash Left Join  (cost=2.41..3.95 rows=100 width=452) (actual time=0.181..0.193 rows=15 loops=1)\n  Hash Cond: (s.usesysid = u.oid)\n  ->  Hash Left Join  (cost=1.05..2.32 rows=100 width=388) (actual time=0.158..0.166 rows=15 loops=1)\n        Hash Cond: (s.datid = d.oid)\n        ->  Function Scan on pg_stat_get_activity s  (cost=0.00..1.00 rows=100 width=324) (actual time=0.122..0.123 rows=15 loops=1)\n        ->  Hash  (cost=1.02..1.02 rows=2 width=68) (actual time=0.015..0.015 rows=5 loops=1)\n              Buckets: 1024  Batches: 1  Memory Usage: 9kB\n              ->  Seq Scan on pg_database d  (cost=0.00..1.02 rows=2 width=68) (actual time=0.008..0.009 rows=5 loops=1)\n  ->  Hash  (cost=1.16..1.16 rows=16 width=68) (actual time=0.008..0.008 rows=16 loops=1)\n        Buckets: 1024  Batches: 1  Memory Usage: 10kB\n        ->  Seq Scan on pg_authid u  (cost=0.00..1.16 rows=16 width=68) (actual time=0.003..0.005 rows=16 loops=1)\nPlanning Time: 0.874 ms\nExecution Time: 0.283 ms",
+  "executionTime": 0.283,
+  "rowsProcessed": 16,
+  "costEstimate": 0.0,
+  "statementType": "SELECT",
+  "tablesUsed": ["pg_stat_activity", "pg_database", "pg_authid"],
+  "hasWhereClause": false,
+  "hasJoinClause": true,
+  "hasLimitClause": false
+}
