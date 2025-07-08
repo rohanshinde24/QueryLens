@@ -44,7 +44,10 @@ public class QueryAnalyzerService {
             lower.startsWith("pg_stat_get")
         );
     }
-
+    public List<String> getRawPlanLines(String sql) {
+        return jdbcTemplate.queryForList("EXPLAIN ANALYZE " + sql, String.class);
+    }
+    
     public QueryMetrics analyzeQuery(String sql) {
         String explainQuery = "EXPLAIN ANALYZE " + sql;
         List<String> output = jdbcTemplate.queryForList(explainQuery, String.class);
@@ -53,26 +56,6 @@ public class QueryAnalyzerService {
         int rowsProcessed = 0;
         double costEstimate = 0.0;
 
-        // for (String line : output) {
-        //     try {
-        //         if (line.contains("Execution Time:")) {
-        //             executionTime = Double.parseDouble(line.split("Execution Time: ")[1].split(" ")[0]);
-        //         } else if (line.contains("rows=")) {
-        //             String[] parts = line.split("rows=");
-        //             if (parts.length > 1) {
-        //                 rowsProcessed = Integer.parseInt(parts[1].split(" ")[0]);
-        //             }
-        //         } else if (line.contains("cost=")) {
-        //             String costSubstr = line.substring(line.indexOf("cost=") + 5);
-        //             String[] costParts = costSubstr.split("\\.\\.");
-        //             if (costParts.length > 1) {
-        //                 costEstimate = Double.parseDouble(costParts[1].split(" ")[0].replaceAll("[^\\d.]", ""));
-        //             }
-        //         }
-        //     } catch (Exception ignored) {
-        //         // Resilient parsing; ignore bad lines
-        //     }
-        // }
         // Pattern to capture actual rows from the "actual time=... rows=X" clause
         Pattern actualRowsPattern = Pattern.compile("actual time=[^ ]+ rows=(\\d+)", Pattern.CASE_INSENSITIVE);
 
@@ -120,55 +103,6 @@ public class QueryAnalyzerService {
                 } catch (Exception ignored) {}
             }
         }
-
-        // String cleanedSql = sql.replaceAll("[\\n\\r]+", " ").trim();
-        // String upperSql = cleanedSql.toUpperCase();
-
-        // QueryMetrics metrics = new QueryMetrics();
-        // metrics.setRawOutput(String.join("\n", output));
-        // metrics.setExecutionTime(executionTime);
-        // metrics.setRowsProcessed(rowsProcessed);
-        // metrics.setCostEstimate(costEstimate);
-
-        // if (upperSql.startsWith("WITH")) {
-        //     // Try to find the first actual DML statement after CTE
-        //     int selectIndex = upperSql.indexOf("SELECT");
-        //     int insertIndex = upperSql.indexOf("INSERT");
-        //     int updateIndex = upperSql.indexOf("UPDATE");
-        //     int deleteIndex = upperSql.indexOf("DELETE");
-
-        //     int minIndex = Integer.MAX_VALUE;
-        //     String type = "UNKNOWN";
-        //     if (selectIndex != -1 && selectIndex < minIndex) {
-        //         minIndex = selectIndex;
-        //         type = "SELECT";
-        //     }
-        //     if (insertIndex != -1 && insertIndex < minIndex) {
-        //         minIndex = insertIndex;
-        //         type = "INSERT";
-        //     }
-        //     if (updateIndex != -1 && updateIndex < minIndex) {
-        //         minIndex = updateIndex;
-        //         type = "UPDATE";
-        //     }
-        //     if (deleteIndex != -1 && deleteIndex < minIndex) {
-        //         minIndex = deleteIndex;
-        //         type = "DELETE";
-        //     }
-        //     metrics.setStatementType(type);
-        // } else {
-        //     if (upperSql.startsWith("SELECT")) {
-        //         metrics.setStatementType("SELECT");
-        //     } else if (upperSql.startsWith("INSERT")) {
-        //         metrics.setStatementType("INSERT");
-        //     } else if (upperSql.startsWith("UPDATE")) {
-        //         metrics.setStatementType("UPDATE");
-        //     } else if (upperSql.startsWith("DELETE")) {
-        //         metrics.setStatementType("DELETE");
-        //     } else {
-        //         metrics.setStatementType("UNKNOWN");
-        //     }
-        // }
         String cleanedSql = sql.replaceAll("[\\n\\r]+", " ").trim();
         QueryMetrics metrics = new QueryMetrics();
         metrics.setRawOutput(String.join("\n", output));
@@ -210,7 +144,7 @@ public class QueryAnalyzerService {
         while (tableMatcher.find()) {
             tables.add(tableMatcher.group(1));
         }
-        
+
         // JOIN
         Matcher joinTableMatcher = JOIN_TABLE_PATTERN.matcher(cleanedSql);
         while (joinTableMatcher.find()) {

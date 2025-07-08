@@ -2,7 +2,6 @@
 package com.querylens.model;
 
 import java.util.List;
-import java.util.regex.Matcher;
 
 public class QueryMetrics {
 
@@ -28,7 +27,7 @@ public class QueryMetrics {
         this.rowsProcessed = rowsProcessed;
         this.costEstimate = costEstimate;
     }
-
+    
     // ✅ Getters & setters (fully encapsulated)
     public String getRawOutput() {
         return rawOutput;
