@@ -1,6 +1,8 @@
 package com.querylens.optimizer;
 
 import com.querylens.optimizer.detector.SelectStarDetector;
+import com.querylens.optimizer.detector.MissingIndexScanDetector;
+import com.querylens.optimizer.detector.NonSargablePredicateDetector;
 import com.querylens.optimizer.detector.ScalarSubqueryDetector;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +17,9 @@ public class QueryOptimizerService {
 
     private final List<QueryPatternDetector> detectors = List.of(
         new SelectStarDetector(),
-        new ScalarSubqueryDetector()
+        new ScalarSubqueryDetector(),
+        new NonSargablePredicateDetector(),    // newly added
+        new MissingIndexScanDetector() 
         // → add more detectors here as you implement them
     );
 
