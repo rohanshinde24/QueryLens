@@ -73,3 +73,5 @@ nbdist/
 # Temporary files
 *.swp
 *~
+DEPLOYMENT.md
+RENDER_DEPLOYMENT.md
