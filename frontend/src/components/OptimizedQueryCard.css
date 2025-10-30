@@ -1,0 +1,112 @@
+.optimized-query-card {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  grid-column: 1 / -1;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.copy-button {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s;
+}
+
+.copy-button:hover {
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.query-comparison {
+  margin: 1.5rem 0;
+}
+
+.query-display {
+  background: #1e293b;
+  border-radius: 8px;
+  padding: 1.5rem;
+  overflow-x: auto;
+}
+
+.sql-code {
+  margin: 0;
+  font-family: 'Courier New', monospace;
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.sql-code code {
+  color: #e2e8f0;
+  display: block;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.optimization-note {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 8px;
+  border-left: 4px solid #10b981;
+  margin-top: 1rem;
+}
+
+.note-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.optimization-note p {
+  margin: 0;
+  color: #666;
+  font-size: 0.95rem;
+}
+
+/* Scrollbar styling for code blocks */
+.query-display::-webkit-scrollbar {
+  height: 8px;
+}
+
+.query-display::-webkit-scrollbar-track {
+  background: #0f172a;
+  border-radius: 4px;
+}
+
+.query-display::-webkit-scrollbar-thumb {
+  background: #475569;
+  border-radius: 4px;
+}
+
+.query-display::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+@media (max-width: 768px) {
+  .card-header {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+
+  .copy-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

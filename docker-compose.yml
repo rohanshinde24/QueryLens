@@ -1,0 +1,68 @@
+version: "3.8"
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: querylens-postgres
+    environment:
+      POSTGRES_DB: querylens_db
+      POSTGRES_USER: querylens_user
+      POSTGRES_PASSWORD: querylens_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init_db.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U querylens_user -d querylens_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - querylens-network
+
+  # Spring Boot Backend API
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: querylens-backend
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/querylens_db
+      - SPRING_DATASOURCE_USERNAME=querylens_user
+      - SPRING_DATASOURCE_PASSWORD=querylens_pass
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=none
+      - SERVER_PORT=8080
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - querylens-network
+    restart: unless-stopped
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: querylens-frontend
+    environment:
+      - REACT_APP_API_URL=http://localhost:8080
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - querylens-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  querylens-network:
+    driver: bridge
+
