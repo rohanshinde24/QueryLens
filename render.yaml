@@ -1,0 +1,32 @@
+services:
+  # Spring Boot Backend
+  - type: web
+    name: querylens-api
+    env: java
+    plan: free
+    buildCommand: ./mvnw clean package -DskipTests
+    startCommand: java -Dserver.port=$PORT -jar target/*.jar
+    envVars:
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: querylens-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: querylens-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: querylens-db
+          property: password
+      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
+        value: none
+      - key: SERVER_PORT
+        value: $PORT
+
+databases:
+  - name: querylens-db
+    plan: free
+    databaseName: querylens
+    user: querylens_user
+
