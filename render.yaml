@@ -1,32 +1,20 @@
 services:
-  # Spring Boot Backend
+  # Spring Boot Backend - Stateless (no database needed)
   - type: web
     name: querylens-api
     env: java
     plan: free
     buildCommand: ./mvnw clean package -DskipTests
-    startCommand: java -Dserver.port=$PORT -jar target/*.jar
+    startCommand: java -Dserver.port=$PORT -jar target/querylens-0.0.1-SNAPSHOT.jar
     envVars:
       - key: SPRING_DATASOURCE_URL
-        fromDatabase:
-          name: querylens-db
-          property: connectionString
+        value: jdbc:h2:mem:testdb
+      - key: SPRING_DATASOURCE_DRIVER_CLASS_NAME
+        value: org.h2.Driver
       - key: SPRING_DATASOURCE_USERNAME
-        fromDatabase:
-          name: querylens-db
-          property: user
+        value: sa
       - key: SPRING_DATASOURCE_PASSWORD
-        fromDatabase:
-          name: querylens-db
-          property: password
+        value: ''
       - key: SPRING_JPA_HIBERNATE_DDL_AUTO
         value: none
-      - key: SERVER_PORT
-        value: $PORT
-
-databases:
-  - name: querylens-db
-    plan: free
-    databaseName: querylens
-    user: querylens_user
 
