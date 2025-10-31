@@ -1,4 +1,3 @@
-# HELP.md
 # target/
 # .mvn/wrapper/maven-wrapper.jar
 # !**/src/main/**/target/
@@ -73,5 +72,8 @@ nbdist/
 # Temporary files
 *.swp
 *~
-DEPLOYMENT.md
-RENDER_DEPLOYMENT.md
+
+# Ignore all markdown files except README
+*.md
+!README.md
+
