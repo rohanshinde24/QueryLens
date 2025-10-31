@@ -22,17 +22,21 @@ QueryLens is a BI-focused SQL query performance analyzer built specifically for 
 
 ## 📸 Screenshots
 
-### Main Application Interface
-![QueryLens Main Interface](data/images/main_app.png)
+### Query Input Interface with BI Examples
+![QueryLens query input form with example BI queries](data/images/main_app.png)
+*SQL input interface with pre-loaded examples for common BI anti-patterns including YEAR() functions, COALESCE patterns, and correlated subqueries*
 
-### Analysis Output - Non-SARGABLE Detection
-![Bottleneck Detection Output 1](data/images/output1.png)
+### Bottleneck Detection with Severity Indicators
+![Analysis results showing critical bottlenecks with cost attribution](data/images/output1.png)
+*Detection results displaying severity badges, performance impact metrics, and prioritized bottleneck list*
 
-### Analysis Output - Cost Attribution
-![Bottleneck Detection Output 2](data/images/output2.png)
+### Detailed Bottleneck Analysis
+![Detailed view of non-SARGABLE predicate detection with line numbers and cost breakdown](data/images/output2.png)
+*Line-by-line analysis showing problem description, cost impact, and why the pattern is slow*
 
-### Analysis Output - Optimization Recommendations
-![Bottleneck Detection Output 3](data/images/output3.png)
+### Optimization Recommendations and Index Suggestions
+![Generated SQL rewrites and CREATE INDEX recommendations](data/images/output3.png)
+*Automated SQL optimization with SARGABLE rewrites and covering index recommendations including expected performance improvements*
 
 ## ✨ Features
 
