@@ -62,20 +62,38 @@ The analyzer identifies performance bottlenecks specific to business intelligenc
 
 ```
 QueryLens/
-├── Controller Layer
-│   └── QueryAnalyzerController - REST API endpoints
-├── Service Layer
-│   └── QueryAnalyzerService - Core analysis logic
-├── Optimizer Layer
-│   ├── QueryOptimizerService - Orchestrates detectors
-│   ├── QueryRewriteService - Orchestrates rewriters
-│   ├── Detectors/ - Pattern detection implementations
-│   └── Rewriters/ - Query transformation implementations
-├── Model Layer
-│   ├── QueryMetrics - Performance metrics data
-│   └── DTOs - Request/Response data transfer objects
-└── Database
-    └── PostgreSQL - Target database for analysis
+├── Backend (Spring Boot)
+│   ├── controller/
+│   │   └── BiAnalysisController - REST API endpoints
+│   ├── analyzer/
+│   │   ├── ExecutionPlanNode - Execution plan representation
+│   │   ├── Bottleneck - Performance issue model
+│   │   └── bi/
+│   │       ├── BiQueryAnalysisService - Main orchestrator
+│   │       ├── NonSargableDetector - YEAR(), COALESCE() detection
+│   │       ├── CorrelatedSubqueryDetector - Per-row subquery detection
+│   │       ├── OrConditionDetector - OR condition analysis
+│   │       ├── LateFilterDetector - Filter pushdown recommendations
+│   │       ├── MissingIndexAnalyzer - Index recommendations
+│   │       ├── HeavyAggregationOptimizer - Aggregation optimization
+│   │       └── ResultsFormatter - Professional output formatting
+│   ├── dto/
+│   │   ├── BiAnalysisRequest
+│   │   └── BiAnalysisResponse
+│   └── config/
+│       └── WebConfig - CORS configuration
+│
+├── Frontend (React)
+│   ├── components/
+│   │   ├── Header - Application header
+│   │   ├── QueryInput - SQL input with BI examples
+│   │   └── BiResults - Bottleneck visualization
+│   └── App - Main application logic
+│
+└── Tests
+    ├── analyzer/bi/ - BI detector tests
+    ├── benchmark/ - Performance validation
+    └── optimizer/ - Legacy detector tests
 ```
 
 ## 🚀 Getting Started
@@ -162,15 +180,15 @@ The database will be automatically initialized with sample data for testing!
 
 ## 📡 API Usage
 
-### Analyze Query
+### Analyze Query for BI Bottlenecks
 
-**Endpoint**: `POST /analyze`
+**Endpoint**: `POST /api/bi/analyze`
 
 **Request Body**:
 
 ```json
 {
-  "sql": "SELECT * FROM users WHERE age > 25"
+  "sql": "SELECT d.descr, SUM(gd.amount) FROM GIVING_DETAIL gd JOIN DONOR_DIM d ON d.SF_ID = COALESCE(gd.account, gd.contact) WHERE YEAR(gd.posted_date) = 2023 GROUP BY d.descr"
 }
 ```
 
@@ -178,24 +196,49 @@ The database will be automatically initialized with sample data for testing!
 
 ```json
 {
-  "metrics": {
-    "executionTime": 1.234,
-    "rowsProcessed": 1000,
-    "costEstimate": 45.67,
-    "statementType": "SELECT",
-    "tablesUsed": ["users"],
-    "hasWhereClause": true,
-    "hasJoinClause": false,
-    "hasLimitClause": false,
-    "rawOutput": "EXPLAIN ANALYZE output..."
-  },
-  "suggestions": [
-    "Avoid using SELECT *; list only the columns you need to reduce I/O.",
-    "Sequential scan detected; consider adding an index on the filtered/joined columns."
+  "bottlenecks": [
+    {
+      "severity": "CRITICAL",
+      "issueType": "NON_SARGABLE_PREDICATE",
+      "lineNumber": 1,
+      "queryFragment": "WHERE YEAR(gd.posted_date) = 2023",
+      "costPercentage": 72.0,
+      "timeImpactSeconds": 49.0,
+      "problemDescription": "Function YEAR() on column prevents index seek",
+      "whyItsASlow": "SQL Server cannot use an index on 'posted_date' because the YEAR() function must be applied to every row before comparison. This forces a full table scan.",
+      "fixes": [
+        "Replace YEAR() function with SARGABLE date range",
+        "This allows SQL Server to use an index seek instead of scan"
+      ],
+      "optimizedFragment": "gd.posted_date >= '2023-01-01' AND gd.posted_date < '2024-01-01'",
+      "fixQueries": [
+        "CREATE INDEX IX_gd_posted_date ON GIVING_DETAIL (posted_date) INCLUDE (account, contact, amount);"
+      ],
+      "expectedImprovement": "~80-95% reduction in logical reads, ~80-95% faster execution"
+    },
+    {
+      "severity": "CRITICAL",
+      "issueType": "OR_CONDITION",
+      "lineNumber": 1,
+      "queryFragment": "COALESCE(gd.account, gd.contact)",
+      "costPercentage": 72.0,
+      "problemDescription": "COALESCE in WHERE clause prevents index seeks",
+      "optimizedFragment": "-- Split into UNION ALL with two index seeks...",
+      "expectedImprovement": "Converts scan to two seeks, typically 10-20x faster"
+    }
   ],
-  "optimizedSql": "SELECT id, name, email FROM users WHERE age > 25"
+  "totalBottlenecks": 2,
+  "criticalCount": 2,
+  "warningCount": 0,
+  "potentialImprovementPercent": 95.0
 }
 ```
+
+### Get Formatted Text Report
+
+**Endpoint**: `POST /api/bi/analyze/formatted`
+
+Returns formatted text output suitable for console/CLI display with cost breakdown tables, detailed analysis, and index recommendations.
 
 ## 🔧 Configuration
 
@@ -209,8 +252,6 @@ The database will be automatically initialized with sample data for testing!
 Currently supports PostgreSQL with `EXPLAIN ANALYZE` functionality.
 
 ## 🧪 Testing
-
-QueryLens follows **Test-Driven Development (TDD)** practices with comprehensive test coverage.
 
 ### Run All Tests
 
@@ -226,33 +267,35 @@ QueryLens follows **Test-Driven Development (TDD)** practices with comprehensive
 
 Coverage reports will be generated in `target/site/jacoco/index.html`
 
-### Test Suite Includes
+### Test Suite
 
-- ✅ **Unit Tests**: All detectors, optimizers, and rewriters
-- ✅ **Integration Tests**: REST API endpoints with MockMvc
-- ✅ **Service Tests**: Business logic with mocked dependencies
-- ✅ **Performance Benchmarks**: Query optimization improvements
+**BI Analyzer Tests:**
+- `NonSargableDetectorTest` - YEAR(), COALESCE() detection
+- `RealUSCQueryTest` - Validation with actual production queries
+- `QueryBTest` - Pledge payment query analysis
+- `BiAnalysisDemoTest` - Full analysis output demonstration
 
-### Code Coverage
+**Coverage Areas:**
+- Pattern detection (6 detectors)
+- Execution plan analysis
+- Cost attribution calculation
+- SQL rewriting
+- Index recommendation generation
 
-The project maintains **90%+ code coverage** across:
-- `com.querylens.optimizer.detector` - Pattern detection modules
-- `com.querylens.optimizer.rewriter` - Query rewriting modules
-- `com.querylens.service` - Core business logic
-- `com.querylens.controller` - REST API endpoints
+### Demo Test
 
-### Performance Benchmarks
-
-Run performance benchmarks manually (requires PostgreSQL with sample data):
+See complete analysis output:
 
 ```bash
-./mvnw test -Dtest=PerformanceBenchmarkTest
+./mvnw test -Dtest=BiAnalysisDemoTest
 ```
 
-These tests demonstrate:
-- **80%+ latency reduction** with index-seek optimization
-- **Non-SARGABLE predicate** elimination improvements
-- **SELECT * to explicit columns** I/O reduction
+This runs your actual donor rollup query through the analyzer and displays:
+- Bottleneck identification
+- Cost breakdown
+- Line-by-line analysis
+- Optimization recommendations
+- Index suggestions
 
 ## 🏗️ Development
 
