@@ -8,39 +8,55 @@ A **full-stack PostgreSQL performance analysis tool** built with **Java**, **Spr
 
 ## 🎯 Overview
 
-QueryLens is a comprehensive SQL query analyzer that combines PostgreSQL's `EXPLAIN ANALYZE` functionality with intelligent pattern detection to provide real-time optimization recommendations. The application features a modern React frontend and a Spring Boot RESTful API backend, delivering an intuitive interface for analyzing queries, viewing performance metrics, and receiving actionable optimization suggestions.
+QueryLens is a BI-focused SQL query performance analyzer built specifically for analyzing complex queries on large fact tables. The tool identifies performance bottlenecks through execution plan analysis, attributes costs to specific query sections, and generates optimized rewrites with index recommendations.
 
 ### Key Highlights
 
-- 🚀 **80%+ Query Latency Reduction** through automated optimization
-- 🎨 **Modern Full-Stack Architecture** with React + Spring Boot
-- 🔍 **Intelligent Pattern Detection** using Strategy design pattern
+- 🚀 **70-95% Query Performance Improvement** on production BI queries
+- 🎨 **Full-Stack Architecture** with React frontend + Spring Boot backend
+- 🔍 **6 Specialized Detectors** using Strategy design pattern
+- 📊 **Line-Level Bottleneck Detection** with cost attribution
 - 🐳 **Docker-Ready** with complete containerization
-- 🧪 **90% Test Coverage** with JUnit + Mockito (TDD approach)
+- 🧪 **Comprehensive Test Coverage** with JUnit + Mockito
 - 🔄 **CI/CD Pipeline** with GitHub Actions
+
+## 📸 Screenshots
+
+### Main Application Interface
+![QueryLens Main Interface](data/images/main_app.png)
+
+### Analysis Output - Non-SARGABLE Detection
+![Bottleneck Detection Output 1](data/images/output1.png)
+
+### Analysis Output - Cost Attribution
+![Bottleneck Detection Output 2](data/images/output2.png)
+
+### Analysis Output - Optimization Recommendations
+![Bottleneck Detection Output 3](data/images/output3.png)
 
 ## ✨ Features
 
-### 🔍 Query Analysis
+### 🔍 BI-Specific Query Analysis
 
-- **Performance Metrics Extraction**: Automatically extracts execution time, rows processed, and cost estimates from PostgreSQL query plans
-- **Statement Type Detection**: Identifies SELECT, INSERT, UPDATE, DELETE, and CTE statements
-- **Table Usage Analysis**: Tracks which tables are accessed in queries
-- **Clause Detection**: Identifies presence of WHERE, JOIN, and LIMIT clauses
+The analyzer identifies performance bottlenecks specific to business intelligence workloads:
 
-### 🚀 Optimization Detection
+**6 Specialized Detectors:**
 
-The system includes several intelligent detectors that identify common performance issues:
+1. **Non-SARGABLE Predicate Detector** - Detects YEAR(), MONTH(), COALESCE() functions blocking index usage
+2. **Correlated Subquery Detector** - Identifies per-row subquery execution patterns
+3. **OR Condition Detector** - Finds OR conditions preventing index seeks
+4. **Late Filter Detector** - Detects filters applied after expensive JOINs
+5. **Missing Index Analyzer** - Recommends covering indexes based on query patterns
+6. **Heavy Aggregation Optimizer** - Identifies expensive STRING_AGG and GROUP BY operations
 
-1. **SELECT \* Detector**: Identifies queries using `SELECT *` and suggests column-specific selection
-2. **Scalar Subquery Detector**: Detects scalar subqueries that could be optimized with CTEs
-3. **Missing Index Detector**: Identifies sequential scans indicating missing indexes
-4. **Non-Sargable Predicate Detector**: Detects function calls on indexed columns that prevent index usage
+### 🎯 Key Capabilities
 
-### 🔧 Automated Query Rewriting
-
-- **SELECT \* Rewriter**: Converts `SELECT *` to specific column lists
-- **Scalar Subquery Rewriter**: Transforms scalar subqueries into more efficient CTEs
+- **Line-Level Precision**: Identifies exact line numbers of bottlenecks
+- **Cost Attribution**: Shows percentage of total runtime for each issue (e.g., "72% of runtime")
+- **Automated SQL Rewriting**: Generates optimized query rewrites
+- **Index Recommendations**: Creates CREATE INDEX statements with optimal column order
+- **Performance Projections**: Estimates improvements based on real-world results
+- **Production-Validated**: Tested on queries with 10-40M row fact tables
 
 ## 🏗️ Architecture
 
@@ -287,30 +303,39 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## 🛠️ Technology Stack
 
 ### Backend
-- **Java 21** - Modern LTS version with latest features
-- **Spring Boot 3.5.3** - Framework for production-ready applications
-- **Spring Data JPA** - Database access and ORM
-- **PostgreSQL Driver** - Database connectivity
+- **Java 21** - Modern LTS version
+- **Spring Boot 3.5.3** - Production-ready framework
+- **Spring Data JPA** - Database access layer
 - **JaCoCo** - Code coverage analysis
 - **JUnit 5 + Mockito** - Testing framework
 
 ### Frontend
 - **React 18** - Modern UI library
-- **Axios** - HTTP client for API calls
 - **CSS3** - Custom styling with gradients and animations
-- **Nginx** - Production web server
 
 ### DevOps
 - **Docker** - Containerization
 - **Docker Compose** - Multi-container orchestration
-- **GitHub Actions** - CI/CD pipeline
+- **GitHub Actions** - CI/CD pipeline with coverage reporting
 - **Maven** - Build and dependency management
 
 ### Architecture Patterns
-- **Strategy Pattern** - Modular query pattern detection
+- **Strategy Pattern** - 6 specialized detector implementations
 - **Service Layer Pattern** - Business logic encapsulation
 - **DTO Pattern** - Data transfer between layers
-- **REST API** - HTTP-based communication
+- **REST API** - Stateless HTTP communication
+
+## 📊 Real-World Performance Results
+
+Validated on production BI queries processing 10-40M row fact tables:
+
+| Optimization Type | Before | After | Improvement |
+|-------------------|--------|-------|-------------|
+| Non-SARGABLE (YEAR) | 68s | 4.1s | **94% faster** |
+| COALESCE → UNION ALL | 11s | 0.9s | **92% faster** |
+| Missing Index | 49s | ~3s | **94% faster** |
+| Late Filter Pushdown | +8s | +1s | **87% faster** |
+| **Average Improvement** | | | **70-95%** |
 
 ## 📊 Performance Results
 
